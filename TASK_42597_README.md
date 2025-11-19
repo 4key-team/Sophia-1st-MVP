@@ -1,11 +1,11 @@
-# Task #42597: MemO Memory - Quick Start Guide
+# Task #42597: Mem0 Memory - Quick Start Guide
 
 ## Overview
-MemO (Memory Optimization) - интеллектуальная система памяти с использованием pgvector для семантического поиска релевантных воспоминаний пользователя.
+Mem0 (Memory Optimization) - интеллектуальная система памяти с использованием pgvector для семантического поиска релевантных воспоминаний пользователя.
 
 ## Компоненты
 
-### 1. MemO Client (`app/services/memo.py`)
+### 1. Mem0 Client (`app/services/memo.py`)
 Клиент для работы с векторной базой данных воспоминаний:
 - Хранение воспоминаний с embeddings
 - Семантический поиск (cosine similarity)
@@ -24,11 +24,11 @@ MemO (Memory Optimization) - интеллектуальная система п�
 ## Environment Variables
 
 ```env
-# MemO Configuration
-MEMO_ENABLED=true                                              # Enable/disable memory system
-MEMO_TOP_K=5                                                  # Number of memories to retrieve
-MEMO_SIMILARITY_THRESHOLD=0.7                                 # Minimum cosine similarity
-MEMO_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2  # Embedding model
+# Mem0 Configuration
+MEM0_ENABLED=true                                              # Enable/disable memory system
+MEM0_TOP_K=5                                                  # Number of memories to retrieve
+MEM0_SIMILARITY_THRESHOLD=0.7                                 # Minimum cosine similarity
+MEM0_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2  # Embedding model
 ```
 
 ## Setup
@@ -75,7 +75,7 @@ curl -X POST http://localhost:8000/admin/reload-prompts \
 ```
 
 ### GET /admin/memo-metrics
-Получить метрики производительности MemO.
+Получить метрики производительности Mem0.
 
 **Request:**
 ```bash
@@ -86,7 +86,7 @@ curl http://localhost:8000/admin/memo-metrics \
 **Response:**
 ```json
 {
-  "memo_enabled": true,
+  "mem0_enabled": true,
   "metrics": {
     "total_searches": 150,
     "total_stores": 200,
@@ -158,7 +158,7 @@ response = llm.generate(
 
 ### Run Unit Tests
 ```bash
-# Test MemO
+# Test Mem0
 pytest tests/test_memo.py -v
 
 # Test PromptComposer
@@ -168,24 +168,24 @@ pytest tests/test_prompt_composer.py -v
 pytest tests/ -v
 ```
 
-### Test with MEMO_ENABLED=false
+### Test with MEM0_ENABLED=false
 ```bash
-export MEMO_ENABLED=false
-pytest tests/test_memo.py::TestMemOClient::test_client_disabled -v
+export MEM0_ENABLED=false
+pytest tests/test_memo.py::TestMem0Client::test_client_disabled -v
 ```
 
 ## Performance Targets
 
 ✅ **P95 Latency**: <60ms для поиска воспоминаний
 ✅ **Hit Rate**: >70% (воспоминания найдены для 70%+ запросов)
-✅ **Availability**: Система работает без ошибок при MEMO_ENABLED=false
+✅ **Availability**: Система работает без ошибок при MEM0_ENABLED=false
 
 ## Troubleshooting
 
-### MemO не работает
-1. Проверьте `MEMO_ENABLED=true` в `.env`
+### Mem0 не работает
+1. Проверьте `MEM0_ENABLED=true` в `.env`
 2. Проверьте, что sentence-transformers установлен: `pip list | grep sentence`
-3. Проверьте логи: `tail -f logs/sophia.log | grep MemO`
+3. Проверьте логи: `tail -f logs/sophia.log | grep Mem0`
 
 ### Промпты не перезагружаются
 1. Проверьте, что файл `prompts/base_identity.md` существует
@@ -194,8 +194,8 @@ pytest tests/test_memo.py::TestMemOClient::test_client_disabled -v
 
 ### Низкая производительность
 1. Проверьте метрики: `GET /admin/memo-metrics`
-2. Уменьшите `MEMO_TOP_K` (например, с 5 до 3)
-3. Увеличьте `MEMO_SIMILARITY_THRESHOLD` (например, с 0.7 до 0.8)
+2. Уменьшите `MEM0_TOP_K` (например, с 5 до 3)
+3. Увеличьте `MEM0_SIMILARITY_THRESHOLD` (например, с 0.7 до 0.8)
 4. Проверьте индексы в Supabase: `CREATE INDEX ... USING ivfflat`
 
 ## Architecture Diagram
@@ -207,7 +207,7 @@ pytest tests/test_memo.py::TestMemOClient::test_client_disabled -v
          │
          v
 ┌─────────────────────────────┐
-│   MemO Client               │
+│   Mem0 Client               │
 │  - Generate embedding       │
 │  - Search pgvector DB       │
 │  - Return top-k memories    │
@@ -232,7 +232,7 @@ pytest tests/test_memo.py::TestMemOClient::test_client_disabled -v
 
 ## Next Steps
 
-1. **Integ ration**: Integrate MemO + PromptComposer into LangGraph ResponseGenerator node
+1. **Integ ration**: Integrate Mem0 + PromptComposer into LangGraph ResponseGenerator node
 2. **Testing**: Run integration tests with real database
 3. **Monitoring**: Set up metrics dashboard (Grafana + Prometheus)
 4. **Optimization**: Fine-tune similarity threshold and embedding model

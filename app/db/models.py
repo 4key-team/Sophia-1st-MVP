@@ -8,6 +8,7 @@ from typing import List, Optional
 
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     DateTime,
     Float,
     ForeignKey,
@@ -43,6 +44,12 @@ class User(Base):
     )
     discord_id: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     email: Mapped[str] = mapped_column(Text, nullable=False)
+    mem0_opt_in: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        server_default=text("false"),
+        comment="User consent for Mem0 intelligent memory system"
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )

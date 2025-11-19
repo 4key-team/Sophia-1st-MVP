@@ -1807,23 +1807,23 @@ async def reload_prompts(
 
 
 @app.get("/admin/memo-metrics")
-async def get_memo_metrics(
+async def get_mem0_metrics(
     supabase_token: str = Depends(verify_api_key),
 ):
-    """Get MemO performance metrics (Task #42597)"""
+    """Get Mem0 performance metrics (Task #42597)"""
     try:
-        from app.services.memo import memo_client
+        from app.services.memo import mem0_client
 
-        metrics = memo_client.get_metrics()
+        metrics = mem0_client.get_metrics()
 
         return {
-            "memo_enabled": memo_client.enabled,
+            "mem0_enabled": mem0_client.enabled,
             "metrics": metrics,
             "timestamp": time.time(),
         }
 
     except Exception as e:
-        logger.error(f"Failed to get MemO metrics: {e}")
+        logger.error(f"Failed to get Mem0 metrics: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get metrics: {str(e)}")
 
 
@@ -1907,6 +1907,73 @@ async def run_migration(
     except Exception as e:
         logger.error(f"Failed to run migration: {e}")
         raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
+
+
+@app.post("/user/mem0/opt-in")
+async def set_mem0_opt_in(
+    opt_in: bool,
+    user_id: str,
+    supabase_token: str = Depends(verify_api_key),
+):
+    """Enable or disable Mem0 memory for a user (Task #42597)"""
+    try:
+        from app.services.supabase import get_supabase
+
+        supabase_client = get_supabase(supabase_token)
+
+        # Update user's mem0_opt_in status
+        result = supabase_client.table("users").update({
+            "mem0_opt_in": opt_in
+        }).eq("id", user_id).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail=f"User {user_id} not found")
+
+        return {
+            "user_id": user_id,
+            "mem0_opt_in": opt_in,
+            "message": f"Mem0 memory {'enabled' if opt_in else 'disabled'} for user",
+            "timestamp": time.time(),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update mem0_opt_in: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update opt-in status: {str(e)}")
+
+
+@app.get("/user/mem0/status")
+async def get_mem0_status(
+    user_id: str,
+    supabase_token: str = Depends(verify_api_key),
+):
+    """Get user's Mem0 opt-in status (Task #42597)"""
+    try:
+        from app.services.supabase import get_supabase
+
+        supabase_client = get_supabase(supabase_token)
+
+        # Get user's mem0_opt_in status
+        result = supabase_client.table("users").select("mem0_opt_in").eq("id", user_id).execute()
+
+        if not result.data or len(result.data) == 0:
+            raise HTTPException(status_code=404, detail=f"User {user_id} not found")
+
+        mem0_opt_in = result.data[0].get("mem0_opt_in", False)
+
+        return {
+            "user_id": user_id,
+            "mem0_opt_in": mem0_opt_in,
+            "mem0_enabled_globally": get_settings().MEM0_ENABLED,
+            "timestamp": time.time(),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get mem0 status: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get opt-in status: {str(e)}")
 
 
 if __name__ == "__main__":

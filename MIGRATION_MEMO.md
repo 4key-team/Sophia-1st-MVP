@@ -1,7 +1,7 @@
-# Руководство по Миграции: MemO Memory System (Task #42597)
+# Руководство по Миграции: Mem0 Memory System (Task #42597)
 
 ## Обзор
-Эта миграция добавляет систему MemO (Intelligent Memory) с семантическим хранилищем памяти на основе pgvector.
+Эта миграция добавляет систему Mem0 (Intelligent Memory) с семантическим хранилищем памяти на основе pgvector.
 
 ## Предварительные Требования
 - PostgreSQL с установленным расширением pgvector
@@ -100,11 +100,11 @@ WHERE tablename = 'user_memories';
 Добавьте эти переменные в production `.env`:
 
 ```bash
-# Конфигурация MemO
-MEMO_ENABLED=true
-MEMO_TOP_K=5
-MEMO_SIMILARITY_THRESHOLD=0.7
-MEMO_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+# Конфигурация Mem0
+MEM0_ENABLED=true
+MEM0_TOP_K=5
+MEM0_SIMILARITY_THRESHOLD=0.7
+MEM0_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
 
 # Supabase (должны уже существовать)
 SUPABASE_URL=https://[your-project-ref].supabase.co
@@ -231,7 +231,7 @@ REINDEX INDEX idx_user_memories_embedding;
 - [ ] Backend перезапущен с новой конфигурацией
 - [ ] API тест успешен (память сохранена)
 - [ ] Запрос к БД успешен (память извлечена)
-- [ ] Логи показывают метрики MemO (latency < 60ms P95)
+- [ ] Логи показывают метрики Mem0 (latency < 60ms P95)
 - [ ] Hot reload работает (изменения prompts/base_identity.md применяются)
 
 ## Поддержка

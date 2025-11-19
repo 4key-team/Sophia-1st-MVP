@@ -18,7 +18,7 @@ from app.services.tts import synthesize_inworld
 from app.services.supabase import upload_audio_and_get_url
 from app.services.memory import memory_manager, ConversationTurn
 from app.services.rag import rag_system
-from app.services.memo import memo_client  # Task #42597
+from app.services.memo import mem0_client  # Task #42597
 from app.services.prompt_composer import prompt_composer  # Task #42597
 from app.config import get_settings
 
@@ -41,7 +41,7 @@ class GraphState(TypedDict):
     user_emotion: EmotionData
     intent: str
     context_memory: Dict[str, Any]
-    memo_context: Dict[str, Any]  # Task #42597: MemO intelligent memory context
+    mem0_context: Dict[str, Any]  # Task #42597: Mem0 intelligent memory context
     llm_response: str
     sophia_emotion: EmotionData
     audio_url: str
@@ -338,10 +338,10 @@ class ResponseGenerator:
             context_dict = self._build_voxtral_context(state)
 
             # Use Voxtral Large for response generation with built-in fallback logic
-            # Build a comprehensive system prompt using existing transcript and context (Task #42597: with MemO)
+            # Build a comprehensive system prompt using existing transcript and context (Task #42597: with Mem0)
             system_prompt = self._build_voxtral_system_prompt(
                 intent=state.get("intent", ""),
-                memo_context=state.get("memo_context"),
+                mem0_context=state.get("mem0_context"),
                 user_emotion=state["user_emotion"].label
             )
             prompt_with_context = self._build_voxtral_prompt_with_context(
@@ -436,24 +436,24 @@ class ResponseGenerator:
         )
         state["context_memory"] = memory_context
 
-        # Task #42597: Get MemO intelligent memory
-        memo_memories = []
+        # Task #42597: Get Mem0 intelligent memory
+        mem0_memories = []
         try:
             # Extract user_id from session (assuming session_id format or use default)
             user_id = state.get("user_id", state["session_id"])
-            memo_memories = asyncio.run(
-                memo_client.search_memories(
+            mem0_memories = asyncio.run(
+                mem0_client.search_memories(
                     user_id=user_id,
                     query_text=state["transcript"],
                     top_k=3
                 )
             )
-            if memo_memories:
-                logger.info(f"MemO: Retrieved {len(memo_memories)} relevant memories")
+            if mem0_memories:
+                logger.info(f"Mem0: Retrieved {len(mem0_memories)} relevant memories")
         except Exception as e:
-            logger.warning(f"MemO memory retrieval failed: {e}")
+            logger.warning(f"Mem0 memory retrieval failed: {e}")
 
-        state["memo_context"] = {"memories": memo_memories}
+        state["mem0_context"] = {"memories": mem0_memories}
 
         # Build context dictionary
         context = {
@@ -498,23 +498,23 @@ class ResponseGenerator:
         )
         state["context_memory"] = context
 
-        # Task #42597: Get MemO intelligent memory (also for legacy path)
-        memo_memories = []
+        # Task #42597: Get Mem0 intelligent memory (also for legacy path)
+        mem0_memories = []
         try:
             user_id = state.get("user_id", state["session_id"])
-            memo_memories = asyncio.run(
-                memo_client.search_memories(
+            mem0_memories = asyncio.run(
+                mem0_client.search_memories(
                     user_id=user_id,
                     query_text=state.get("transcript", ""),
                     top_k=3
                 )
             )
-            if memo_memories:
-                logger.info(f"MemO (legacy): Retrieved {len(memo_memories)} memories")
+            if mem0_memories:
+                logger.info(f"Mem0 (legacy): Retrieved {len(mem0_memories)} memories")
         except Exception as e:
-            logger.warning(f"MemO memory retrieval (legacy) failed: {e}")
+            logger.warning(f"Mem0 memory retrieval (legacy) failed: {e}")
 
-        state["memo_context"] = {"memories": memo_memories}
+        state["mem0_context"] = {"memories": mem0_memories}
 
         context_parts = []
         if "last_topics" in context and context["last_topics"]:
@@ -538,11 +538,11 @@ class ResponseGenerator:
 
         return " | ".join(context_parts) if context_parts else ""
 
-    def _build_voxtral_system_prompt(self, intent: str, memo_context: Dict[str, Any] = None, user_emotion: str = None) -> str:
+    def _build_voxtral_system_prompt(self, intent: str, mem0_context: Dict[str, Any] = None, user_emotion: str = None) -> str:
         """Build system prompt for Voxtral Large based on intent using PromptComposer (Task #42597)"""
         # Use PromptComposer to build dynamic prompt with memory context
         system_prompt = prompt_composer.compose_system_prompt(
-            memory_context=memo_context,
+            memory_context=mem0_context,
             user_emotion=user_emotion
         )
 
@@ -888,14 +888,14 @@ class EvalLogger:
         # Store all extracted memories
         for memory in memories_to_store:
             try:
-                await memo_client.store_memory(
+                await mem0_client.store_memory(
                     user_id=user_id,
                     session_id=session_id,
                     memory_text=memory["text"],
                     memory_type=memory["type"],
                     importance=memory["importance"]
                 )
-                logger.info(f"MemO: Stored {memory['type']} memory for user {user_id}")
+                logger.info(f"Mem0: Stored {memory['type']} memory for user {user_id}")
             except Exception as e:
                 logger.warning(f"Failed to store {memory['type']} memory: {e}")
 

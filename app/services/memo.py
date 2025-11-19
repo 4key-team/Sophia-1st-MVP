@@ -30,10 +30,10 @@ class MemOClient:
 
     def __init__(self):
         self.settings = get_settings()
-        self.enabled = self.settings.MEMO_ENABLED
-        self.top_k = self.settings.MEMO_TOP_K
-        self.similarity_threshold = self.settings.MEMO_SIMILARITY_THRESHOLD
-        self.embedding_model_name = self.settings.MEMO_EMBEDDING_MODEL
+        self.enabled = self.settings.MEM0_ENABLED
+        self.top_k = self.settings.MEM0_TOP_K
+        self.similarity_threshold = self.settings.MEM0_SIMILARITY_THRESHOLD
+        self.embedding_model_name = self.settings.MEM0_EMBEDDING_MODEL
 
         # Performance metrics
         self.metrics = MemOMetrics()
@@ -43,9 +43,9 @@ class MemOClient:
         self._embedding_model = None
 
         if self.enabled:
-            logger.info(f"MemO enabled: top_k={self.top_k}, threshold={self.similarity_threshold}")
+            logger.info(f"Mem0 enabled: top_k={self.top_k}, threshold={self.similarity_threshold}")
         else:
-            logger.info("MemO disabled via MEMO_ENABLED=false")
+            logger.info("Mem0 disabled via MEM0_ENABLED=false")
 
     def _get_embedding_model(self):
         """Lazy load sentence-transformers model"""
@@ -90,11 +90,26 @@ class MemOClient:
     ) -> bool:
         """Store a new memory with semantic embedding"""
         if not self.enabled:
-            logger.debug("MemO disabled, skipping memory storage")
+            logger.debug("Mem0 disabled, skipping memory storage")
             return True  # Return success to avoid breaking pipeline
 
         try:
             start_time = time.perf_counter()
+
+            # Check user opt-in consent
+            supabase_client = get_supabase(access_token)
+            try:
+                user_data = supabase_client.table("users").select("mem0_opt_in").eq("id", user_id).execute()
+                if user_data.data and len(user_data.data) > 0:
+                    if not user_data.data[0].get("mem0_opt_in", False):
+                        logger.debug(f"User {user_id} has not opted in to Mem0, skipping memory storage")
+                        return True  # Return success to avoid breaking pipeline
+                else:
+                    logger.warning(f"User {user_id} not found, skipping memory storage")
+                    return True
+            except Exception as e:
+                logger.warning(f"Failed to check user opt-in status: {e}, skipping memory storage")
+                return True  # Graceful degradation
 
             # Generate embedding
             embedding = self._generate_embedding(memory_text)
@@ -114,8 +129,7 @@ class MemOClient:
                 "updated_at": datetime.utcnow().isoformat(),
             }
 
-            # Store in Supabase
-            supabase_client = get_supabase(access_token)
+            # Store in Supabase (reuse client from opt-in check)
             result = supabase_client.table("user_memories").insert(memory_record).execute()
 
             latency_ms = (time.perf_counter() - start_time) * 1000
@@ -140,7 +154,7 @@ class MemOClient:
     ) -> List[Dict[str, Any]]:
         """Search for relevant memories using semantic similarity"""
         if not self.enabled:
-            logger.debug("MemO disabled, returning empty memories")
+            logger.debug("Mem0 disabled, returning empty memories")
             return []
 
         try:
@@ -235,7 +249,7 @@ class MemOClient:
             self.metrics.hit_rate = self.metrics.total_hits / self.metrics.total_searches
 
     def get_metrics(self) -> Dict[str, Any]:
-        """Get current MemO performance metrics"""
+        """Get current Mem0 performance metrics"""
         return asdict(self.metrics)
 
     async def get_context_for_llm(
@@ -292,4 +306,4 @@ class MemOClient:
 
 
 # Singleton instance
-memo_client = MemOClient()
+mem0_client = MemOClient()
