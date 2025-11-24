@@ -1,9 +1,38 @@
+# ========================================
+# Project-Specific Files
+# ========================================
 dbp
 supabase_schema.sql
 Scarecriw/
-Scarecriw/
-frontend-nextjs/node_modules/
 
+# ========================================
+# Environment variables & secrets
+# ========================================
+# Root env files (never commit real secrets)
+.env
+.env.*
+*.env
+.env.local
+.env.*.local
+.envrc
+*.env.local
+*.pem
+*.key
+*.crt
+**/*.secret
+!.env.example
+!*.example
+!*.sample
+
+# Frontend env files
+frontend-nextjs/.env
+frontend-nextjs/.env.*
+frontend-nextjs/*.env
+frontend-nextjs/.env.local
+frontend-nextjs/.env.production.local
+!frontend-nextjs/.env.example
+
+# ========================================
 # Python caches & build artifacts
 # ========================================
 __pycache__/
@@ -30,7 +59,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-pip-wheel-metadata/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
@@ -57,22 +85,6 @@ ENV/
 .env/
 
 # ========================================
-# Environment variables & secrets
-# ========================================
-.env
-.env.*
-.env.local
-.env.*.local
-.envrc
-*.env.local
-*.pem
-*.key
-*.crt
-**/*.secret
-!*.example
-!*.sample
-
-# ========================================
 # Supabase session state
 # ========================================
 .supabase/
@@ -96,12 +108,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 *.tsbuildinfo
+.pnpm-store/
+.cache/
 frontend-nextjs/node_modules/
 frontend-nextjs/.next/
 frontend-nextjs/out/
-frontend-nextjs/.env
-frontend-nextjs/.env.local
-frontend-nextjs/.env.production.local
 frontend-nextjs/npm-debug.log*
 frontend-nextjs/yarn-debug.log*
 frontend-nextjs/yarn-error.log*
@@ -109,6 +120,10 @@ frontend-nextjs/yarn-error.log*
 # ========================================
 # Logs & temp files
 # ========================================
+*.log
+logs/
+tmp/
+temp/
 .pytest_cache/
 .coverage
 htmlcov/
@@ -119,7 +134,6 @@ coverage.xml
 .hypothesis/
 test_audio_queue_simple.py
 test_websocket_audio_queue.py
-*.log
 *.tmp
 *.temp
 *.cache
@@ -127,7 +141,7 @@ test_websocket_audio_queue.py
 *.swp
 *.swo
 *~
-test_audio_queue_simple.py
+.direnv/
 
 # ========================================
 # IDEs & editors
@@ -137,12 +151,31 @@ test_audio_queue_simple.py
 .history/
 *.sublime-project
 *.sublime-workspace
+*.iml
+*.suo
+*.sln
+
+# ========================================
+# OS-specific
+# ========================================
+# macOS
 .DS_Store
-Thumbs.db
-ehthumbs.db
-Icon?
+.AppleDouble
+.LSOverride
+._*
 .Spotlight-V100
 .Trashes
+Icon?
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
 
 # ========================================
 # Docker / container artifacts
@@ -179,17 +212,11 @@ audio/tmp/
 # ========================================
 # Temporary & Cache Files
 # ========================================
-*.tmp
-*.temp
-*.cache
 .ipynb_checkpoints/
-.mypy_cache/
-.dmypy.json
-dmypy.json
-.pyre/
+.python-version
 
 # ========================================
-# Project-Specific
+# Project-Specific Code
 # ========================================
 # Old/duplicate code
 New folder/
@@ -197,9 +224,6 @@ main copy.py
 
 # Jupyter Notebook
 .ipynb_checkpoints
-
-# pyenv
-.python-version
 
 # Celery
 celerybeat-schedule
@@ -217,22 +241,3 @@ celerybeat.pid
 
 # mkdocs
 /site
-
-# ========================================
-# OS-specific
-# ========================================
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# Linux
-*~
-.directory

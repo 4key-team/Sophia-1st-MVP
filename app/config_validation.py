@@ -7,7 +7,7 @@ from app.config import Settings
 
 logger = logging.getLogger("sophia-backend")
 
-MANDATORY_VARS: Iterable[str] = ("SUPABASE_URL", "SUPABASE_KEY")
+MANDATORY_VARS: Iterable[str] = ("SUPABASE_URL",)
 PRODUCTION_ONLY_VARS: Iterable[str] = (
     "MISTRAL_API_KEY",
     "INWORLD_API_KEY",
@@ -37,6 +37,15 @@ def validate_settings(settings: Settings) -> None:
         )
 
     missing_core = _collect_missing(settings, MANDATORY_VARS)
+
+    supabase_key = getattr(settings, "SUPABASE_KEY", None)
+    anon_key = getattr(settings, "SUPABASE_ANON_KEY", None)
+
+    if not supabase_key:
+        missing_core.append("SUPABASE_KEY")
+
+    if not (anon_key or supabase_key):
+        missing_core.append("SUPABASE_ANON_KEY")
     if missing_core:
         missing = ", ".join(missing_core)
         raise SystemExit(

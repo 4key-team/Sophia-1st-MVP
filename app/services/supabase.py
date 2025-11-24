@@ -82,6 +82,16 @@ def init_supabase(settings: Optional[Settings] = None) -> Client:
             "Supabase credentials not configured; set SUPABASE_URL and SUPABASE_KEY"
         )
 
+    anon_key = settings.SUPABASE_ANON_KEY or settings.SUPABASE_KEY
+    if not anon_key:
+        raise RuntimeError(
+            "Supabase anon credentials not configured; set SUPABASE_ANON_KEY or SUPABASE_KEY"
+        )
+    if not settings.SUPABASE_ANON_KEY:
+        logger.info(
+            "SUPABASE_ANON_KEY not configured; using SUPABASE_KEY for anon client"
+        )
+
     SUPABASE_BUCKET_AUDIO = settings.SUPABASE_BUCKET_AUDIO or "audio"
     SUPABASE_AUDIO_PREFIX = settings.SUPABASE_AUDIO_PREFIX or "uploads/"
     SUPABASE_SIGNED_URL_TTL = max(
@@ -94,9 +104,7 @@ def init_supabase(settings: Optional[Settings] = None) -> Client:
         options = None
         if ClientOptions is not None:
             options = ClientOptions(persist_session=False)  # type: ignore[arg-type]
-        _anon_supabase = create_client(
-            settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY, options=options
-        )
+        _anon_supabase = create_client(settings.SUPABASE_URL, anon_key, options=options)
     return _supabase
 
 
