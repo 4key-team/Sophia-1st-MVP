@@ -1946,9 +1946,10 @@ async def text_chat_stream(
     """Streaming variant for text-only chat.
 
     Server-Sent Events (SSE) with:
+    - event: meta, data: { session_id }
     - event: token, data: <text chunk>
-    - event: reply_done, data: { reply }
-    - event: audio_url, data: { audio_url, sophia_emotion }
+    - event: reply_done, data: { reply, user_emotion, session_id }
+    - event: audio_url, data: { audio_url, sophia_emotion, user_emotion, session_id }
     """
     user_id, discord_id = extract_identity_from_token(supabase_token)
     session_identifier = body.session_id or str(uuid.uuid4())
@@ -1969,6 +1970,10 @@ async def text_chat_stream(
 
             try:
                 import json as _json
+
+                # Send meta event with session_id at the start
+                meta_payload = {"session_id": session_identifier}
+                yield f"event: meta\ndata: {_json.dumps(meta_payload)}\n\n"
 
                 emotion_label = "neutral"
                 emotion_conf = 0.7
@@ -2041,7 +2046,11 @@ async def text_chat_stream(
                     yield f"event: token\ndata: {safe_chunk}\n\n"
 
                 reply = "".join(reply_accum).strip()
-                reply_payload = {"reply": reply, "user_emotion": user_emotion_payload}
+                reply_payload = {
+                    "reply": reply,
+                    "user_emotion": user_emotion_payload,
+                    "session_id": session_identifier,
+                }
                 yield f"event: reply_done\ndata: {_json.dumps(reply_payload)}\n\n"
 
                 turn_state.set_status("synthesizing")
@@ -2080,17 +2089,23 @@ async def text_chat_stream(
                     ),
                     "mock_audio": mock_audio,
                     "user_emotion": user_emotion_payload,
+                    "session_id": session_identifier,
                 }
 
-                _record_text_stream_turn(
-                    session_identifier,
-                    body.message,
-                    reply,
-                    user_emotion_payload,
-                    sophia_emotion,
-                    supabase_token,
-                )
+                try:
+                    _record_text_stream_turn(
+                        session_identifier,
+                        body.message,
+                        reply,
+                        user_emotion_payload,
+                        sophia_emotion,
+                        supabase_token,
+                    )
+                except Exception as mem_err:
+                    logger.warning(f"Memory recording failed in text_chat_stream: {mem_err}")
+
                 turn_state.set_status("completed")
+                logger.info(f"About to yield audio_url event with session_id: {session_identifier}")
                 yield f"event: audio_url\ndata: {_json.dumps(payload)}\n\n"
 
             except asyncio.CancelledError:

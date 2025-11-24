@@ -126,7 +126,12 @@ export default function ChatInterface({ messages, setMessages, isLoading, setIsL
 
       const handleEvent = (event: string, data: string) => {
         try {
-          if (event === 'token') {
+          if (event === 'meta') {
+            const payload = JSON.parse(data)
+            if (payload.session_id) {
+              setSessionId(payload.session_id)
+            }
+          } else if (event === 'token') {
             const chunk = data
             accumulated += chunk
             updateSophia({ content: accumulated })
@@ -136,6 +141,9 @@ export default function ChatInterface({ messages, setMessages, isLoading, setIsL
             updateSophia({ content: accumulated, isStreaming: false })
             if (payload.user_emotion) {
               updateUserEmotion(payload.user_emotion)
+            }
+            if (payload.session_id) {
+              setSessionId(payload.session_id)
             }
             replyFinished = true
           } else if (event === 'audio_url') {
@@ -148,6 +156,9 @@ export default function ChatInterface({ messages, setMessages, isLoading, setIsL
             })
             if (payload.user_emotion) {
               updateUserEmotion(payload.user_emotion)
+            }
+            if (payload.session_id) {
+              setSessionId(payload.session_id)
             }
             audioCompleted = true
             const mock = !!payload.mock_audio

@@ -31,6 +31,7 @@ class Settings:
     API_KEYS: List[str] = [
         k.strip() for k in os.getenv("API_KEYS", "").split(",") if k.strip()
     ]
+    REQUIRE_CONSENT: str = os.getenv("REQUIRE_CONSENT", "true")
 
     # External services
     MISTRAL_API_KEY: Optional[str] = os.getenv("MISTRAL_API_KEY")
