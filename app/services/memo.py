@@ -7,13 +7,17 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 import numpy as np
 
+<<<<<<< HEAD
 from prometheus_client import Counter, Gauge
 
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 from app.config import get_settings
 from app.services.supabase import get_supabase
 
 logger = logging.getLogger(__name__)
 
+<<<<<<< HEAD
 # Prometheus metrics for MemO
 memo_writes_total = Counter(
     'memo_writes_total',
@@ -38,6 +42,8 @@ memo_search_latency_seconds = Gauge(
     ['quantile']  # quantile: avg, p95
 )
 
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 
 # Memory metrics for monitoring
 @dataclass
@@ -92,6 +98,7 @@ class MemOClient:
                 return None
         return self._embedding_model
 
+<<<<<<< HEAD
     def _parse_vector_from_db(self, vector_str: any) -> Optional[List[float]]:
         """Parse vector from database (handles both string and list formats)"""
         if vector_str is None:
@@ -117,6 +124,8 @@ class MemOClient:
 
         return None
 
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     def _generate_embedding(self, text: str) -> Optional[List[float]]:
         """Generate embedding vector for text"""
         if not self.enabled:
@@ -179,11 +188,14 @@ class MemOClient:
             latency_ms = (time.perf_counter() - start_time) * 1000
 
             self.metrics.total_stores += 1
+<<<<<<< HEAD
 
             # Update Prometheus metrics
             memo_writes_total.labels(status='success').inc()
             self._update_write_success_rate()
 
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
             logger.info(
                 f"Memory stored: type={memory_type}, latency={latency_ms:.1f}ms"
             )
@@ -193,11 +205,14 @@ class MemOClient:
         except Exception as e:
             logger.error(f"Memory storage failed: {e}")
             self.metrics.total_errors += 1
+<<<<<<< HEAD
 
             # Update Prometheus metrics
             memo_writes_total.labels(status='failure').inc()
             self._update_write_success_rate()
 
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
             return False
 
     async def search_memories(
@@ -256,6 +271,7 @@ class MemOClient:
             memories_with_scores = []
             query_vec = np.array(query_embedding)
 
+<<<<<<< HEAD
             query_norm = float(np.linalg.norm(query_vec))
 
             for memory in result.data:
@@ -276,6 +292,14 @@ class MemOClient:
                     # Cosine similarity
                     similarity = np.dot(query_vec, memory_vec) / (
                         query_norm * memory_norm
+=======
+            for memory in result.data:
+                if memory.get("embedding"):
+                    memory_vec = np.array(memory["embedding"])
+                    # Cosine similarity
+                    similarity = np.dot(query_vec, memory_vec) / (
+                        np.linalg.norm(query_vec) * np.linalg.norm(memory_vec)
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
                     )
 
                     if similarity >= self.similarity_threshold:
@@ -293,9 +317,12 @@ class MemOClient:
             if top_memories:
                 self.metrics.total_hits += 1
 
+<<<<<<< HEAD
             # Update Prometheus metrics
             memo_searches_total.labels(status='success').inc()
 
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
             logger.info(
                 f"Memory search: found={len(top_memories)}/{len(result.data)}, "
                 f"latency={latency_ms:.1f}ms, P95={self.metrics.p95_search_latency_ms:.1f}ms"
@@ -307,10 +334,13 @@ class MemOClient:
             logger.error(f"Memory search failed: {e}")
             self.metrics.total_errors += 1
             self.metrics.total_searches += 1
+<<<<<<< HEAD
 
             # Update Prometheus metrics
             memo_searches_total.labels(status='failure').inc()
 
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
             return []
 
     def _record_search_latency(self, latency_ms: float):
@@ -333,6 +363,7 @@ class MemOClient:
                 self.metrics.total_hits / self.metrics.total_searches
             )
 
+<<<<<<< HEAD
         # Update Prometheus search latency metrics
         memo_search_latency_seconds.labels(quantile='avg').set(
             self.metrics.avg_search_latency_ms / 1000.0
@@ -357,6 +388,8 @@ class MemOClient:
                 f"({success_count}/{total_writes})"
             )
 
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     def get_metrics(self) -> Dict[str, Any]:
         """Get current MemO performance metrics"""
         return asdict(self.metrics)

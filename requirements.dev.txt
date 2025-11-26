@@ -2,12 +2,10 @@
 #    uv pip compile requirements.dev.in -o requirements.dev.txt
 anyio==4.11.0
     # via httpx
-certifi==2025.11.12
+certifi==2025.10.5
     # via
     #   httpcore
     #   httpx
-coverage==7.12.0
-    # via pytest-cov
 h11==0.16.0
     # via httpcore
 httpcore==1.0.9
@@ -18,30 +16,9 @@ idna==3.11
     # via
     #   anyio
     #   httpx
-iniconfig==2.3.0
-    # via pytest
-packaging==25.0
-    # via pytest
-pluggy==1.6.0
-    # via
-    #   pytest
-    #   pytest-cov
-pygments==2.19.2
-    # via pytest
-pytest==9.0.1
-    # via
-    #   -r requirements.dev.in
-    #   pytest-asyncio
-    #   pytest-cov
-pytest-asyncio==1.3.0
-    # via -r requirements.dev.in
-pytest-cov==7.0.0
-    # via -r requirements.dev.in
-ruff==0.14.6
+ruff==0.14.4
     # via -r requirements.dev.in
 sniffio==1.3.1
     # via anyio
 typing-extensions==4.15.0
-    # via
-    #   anyio
-    #   pytest-asyncio
+    # via anyio

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import audioop
+<<<<<<< HEAD
 import json
 from typing import Any, Dict
 
@@ -27,6 +28,9 @@ ALLOWED_AUDIO_CONTENT_TYPES = {
     "audio/mp4",
     "audio/aac",
 }
+=======
+from typing import Dict
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 
 
 def prosody_features(pcm_bytes: bytes) -> Dict[str, str]:
@@ -49,6 +53,7 @@ def prosody_features(pcm_bytes: bytes) -> Dict[str, str]:
         return {"intensity": intensity}
     except Exception:
         return {"intensity": "low"}
+<<<<<<< HEAD
 
 
 async def extract_audio(upload: UploadFile):
@@ -107,3 +112,5 @@ def validate_audio_upload(upload: UploadFile) -> None:
 
 def sse_event(event_type: str, payload: Any):
     return f"event: {event_type}\ndata: {payload if isinstance(payload, str) else json.dumps(payload)}\n\n"
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)

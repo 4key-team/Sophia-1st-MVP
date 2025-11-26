@@ -1,5 +1,2 @@
 httpx
 ruff
-pytest
-pytest-cov
-pytest-asyncio
