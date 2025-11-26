@@ -5,21 +5,15 @@ Falls back to rule-based patterns if LLM fails or times out.
 """
 
 import asyncio
-<<<<<<< HEAD
-=======
 import json
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 import logging
 import re
 import time
 from typing import Dict, Any, Optional, Tuple
 from dataclasses import dataclass
-<<<<<<< HEAD
-=======
 from threading import Lock
 
 from prometheus_client import Counter, Gauge  # type: ignore[import]
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 
 try:
     from mistralai import Mistral
@@ -56,8 +50,6 @@ CRISIS_PATTERNS = [
     r"\b(better.*if.*died|end.*it.*all|take.*my.*life)\b",
 ]
 
-<<<<<<< HEAD
-=======
 TIER0_SYSTEM_PROMPT = (
     "You label short voice transcripts for Sophia. "
     "Allowed intents: greeting, casual, emotional_sharing, crisis, knowledge. "
@@ -151,7 +143,6 @@ _CONFIDENCE_TEXT_PATTERN = re.compile(
     r"confidence\s*(?:is|:)\s*([0-9]+(?:\.[0-9]+)?%?)", re.IGNORECASE
 )
 
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 
 @dataclass
 class ClassificationResult:
@@ -167,8 +158,6 @@ class ClassificationResult:
     source: str  # classification source: "mistral_llm" or "rule_based_fallback"
 
 
-<<<<<<< HEAD
-=======
 class LLMParsingError(ValueError):
     """Raised when LLM response cannot be parsed into structured output."""
 
@@ -329,7 +318,6 @@ def _parse_llm_response(raw_content: str) -> Tuple[str, str, float]:
         raise
 
 
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 def _get_mistral_client() -> Mistral:
     """Get Mistral API client"""
     if Mistral is None:
@@ -544,8 +532,6 @@ def _rule_based_classify(
     return INTENT_CASUAL, EMOTION_NEUTRAL, 0.60
 
 
-<<<<<<< HEAD
-=======
 def _build_llm_prompt(transcript: str) -> str:
     """Create a compact prompt with few-shot examples."""
     sanitized = transcript.strip()
@@ -562,7 +548,6 @@ def _build_llm_prompt(transcript: str) -> str:
     )
 
 
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 async def _llm_classify(
     transcript: str, timeout_ms: int = 500
 ) -> Tuple[str, str, float]:
@@ -572,49 +557,11 @@ async def _llm_classify(
     Raises: asyncio.TimeoutError if exceeds timeout
     """
 
-<<<<<<< HEAD
-    prompt = f"""Classify the following user message into intent and emotion.
-
-Intent types:
-- greeting: user is saying hello/hi
-- casual: casual conversation, chitchat
-- emotional_sharing: user sharing feelings/emotions
-- crisis: mentions of self-harm, suicide, or severe distress
-- knowledge: asking for information/explanation
-
-Emotions: neutral, joy, sad, anxious, angry, fearful, grief, panic, excited
-
-User message: "{transcript}"
-
-Respond ONLY in this JSON format:
-{{"intent": "...", "emotion": "...", "confidence": 0.0-1.0}}"""
-=======
     prompt = _build_llm_prompt(transcript)
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 
     client = _get_mistral_client()
 
     def _invoke() -> Tuple[str, str, float]:
-<<<<<<< HEAD
-        response = client.chat.complete(
-            model="mistral-small-latest",  # Fast model
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.0,
-            max_tokens=50,
-        )
-        content = response.choices[0].message.content
-
-        # Debug logging
-        logger.debug(f"Mistral API response content: {content}")
-
-        # Parse JSON response
-        import json
-
-        if not content or not content.strip():
-            raise ValueError("Empty response from Mistral API")
-        result = json.loads(content.strip())
-        return result["intent"], result["emotion"], result["confidence"]
-=======
         responses_iface = getattr(client, "responses", None)
         request_messages = [
             {
@@ -678,19 +625,14 @@ Respond ONLY in this JSON format:
         logger.debug("Tier-0: Chat API content: %s", _truncate_for_log(content or ""))
 
         return _parse_llm_response(content or "")
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 
     return await asyncio.to_thread(_invoke)
 
 
 async def classify_tier0_fast(
-<<<<<<< HEAD
-    transcript: str, prosody: Optional[Dict[str, Any]] = None, timeout_ms: int = 500
-=======
     transcript: str,
     prosody: Optional[Dict[str, Any]] = None,
     timeout_ms: Optional[int] = None,
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 ) -> ClassificationResult:
     """Ultra-fast tier-0 classification with Mistral Small + rule-based fallback.
 
@@ -700,12 +642,8 @@ async def classify_tier0_fast(
                  - intensity: 0-1 (voice intensity)
                  - pitch: Hz (voice pitch)
                  - confidence: 0-1 (ASR confidence)
-<<<<<<< HEAD
-        timeout_ms: Timeout for LLM classification (default 500ms)
-=======
         timeout_ms: Optional timeout override in ms.
                     None → settings.TIER0_LLM_TIMEOUT_MS (default 1000ms)
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 
     Returns:
         ClassificationResult with intent, emotion, confidence, and metadata
@@ -716,10 +654,7 @@ async def classify_tier0_fast(
         - Crisis detection works in fallback mode
     """
 
-<<<<<<< HEAD
-=======
     settings = get_settings()
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     start_time = time.perf_counter()
     fallback_used = False
 
@@ -727,19 +662,6 @@ async def classify_tier0_fast(
     asr_confidence = prosody.get("confidence", 1.0) if prosody else 1.0
     voice_signal_present = prosody.get("voice_detected", True) if prosody else True
 
-<<<<<<< HEAD
-    # Try LLM classification first
-    try:
-        logger.info(f"Tier-0: Attempting LLM classification (timeout={timeout_ms}ms)")
-        intent, emotion, confidence = await asyncio.wait_for(
-            _llm_classify(transcript, timeout_ms),
-            timeout=timeout_ms / 1000.0,
-        )
-
-        # Adjust emotion based on prosody
-        if prosody and prosody.get("intensity", 0) > 0.8:
-            if emotion == EMOTION_ANXIOUS:
-=======
     effective_timeout_ms = (
         timeout_ms if timeout_ms is not None else settings.TIER0_LLM_TIMEOUT_MS
     )
@@ -769,35 +691,11 @@ async def classify_tier0_fast(
             )
 
             if prosody and prosody.get("intensity", 0) > 0.8 and emotion == EMOTION_ANXIOUS:
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
                 emotion = EMOTION_PANIC
                 logger.info(
                     "Tier-0: Adjusted emotion anxious → panic (high prosody intensity)"
                 )
 
-<<<<<<< HEAD
-        latency_ms = (time.perf_counter() - start_time) * 1000
-        logger.info(
-            f"Tier-0 LLM classification completed: intent={intent}, emotion={emotion}, "
-            f"confidence={confidence:.2f}, latency={latency_ms:.1f}ms"
-        )
-
-    except asyncio.TimeoutError:
-        # Timeout - use rule-based fallback
-        logger.warning(
-            f"Tier-0: LLM timeout ({timeout_ms}ms), using rule-based fallback"
-        )
-        fallback_used = True
-        intent, emotion, confidence = _rule_based_classify(transcript, prosody)
-        latency_ms = (time.perf_counter() - start_time) * 1000
-
-    except Exception as e:
-        # Any error - use rule-based fallback
-        logger.warning(f"Tier-0: LLM error ({e}), using rule-based fallback")
-        fallback_used = True
-        intent, emotion, confidence = _rule_based_classify(transcript, prosody)
-        latency_ms = (time.perf_counter() - start_time) * 1000
-=======
             classification = (intent, emotion, confidence)
             llm_success = True
             break
@@ -861,7 +759,6 @@ async def classify_tier0_fast(
             emotion,
             latency_ms,
         )
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 
     # Double-check for crisis in fallback mode (safety net)
     if fallback_used and _detect_crisis(transcript):
@@ -874,13 +771,10 @@ async def classify_tier0_fast(
         confidence = 0.95
         logger.warning("Tier-0: Crisis detected in fallback mode")
 
-<<<<<<< HEAD
-=======
     _record_metrics(
         llm_success, settings.TIER0_SUCCESS_ALERT_THRESHOLD, latency_ms
     )
 
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     return ClassificationResult(
         type=intent,
         emotion=emotion,
@@ -895,12 +789,6 @@ async def classify_tier0_fast(
 
 # Synchronous wrapper for compatibility
 def classify_tier0_fast_sync(
-<<<<<<< HEAD
-    transcript: str, prosody: Optional[Dict[str, Any]] = None, timeout_ms: int = 500
-) -> Dict[str, Any]:
-    """Synchronous wrapper for classify_tier0_fast().
-
-=======
     transcript: str,
     prosody: Optional[Dict[str, Any]] = None,
     timeout_ms: Optional[int] = None,
@@ -912,7 +800,6 @@ def classify_tier0_fast_sync(
         prosody: Optional prosody feature dict.
         timeout_ms: Optional timeout override; None uses settings default.
 
->>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     Returns dict with keys: type, emotion, confidence, asr_confidence,
                             voice_signal_present, latency_ms, fallback_used
     """
