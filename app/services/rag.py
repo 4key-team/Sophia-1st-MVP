@@ -40,6 +40,7 @@ class RAGResult:
 
 class RAGSystem:
     """RAG system for DeFi FAQs with vector search (optional)."""
+<<<<<<< HEAD
 
     def __init__(self):
         self.settings = get_settings()
@@ -47,11 +48,19 @@ class RAGSystem:
         self.enabled = bool(os.getenv("ENABLE_LOCAL_RAG", "0") == "1") and (
             SentenceTransformer is not None
         )
+=======
+    
+    def __init__(self):
+        self.settings = get_settings()
+        self.supabase = get_supabase()
+        self.enabled = bool(os.getenv("ENABLE_LOCAL_RAG", "0") == "1") and (SentenceTransformer is not None)
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
         self._model = None
         self._faqs: List[FAQEntry] = []
         if self.enabled:
             try:
                 # Use a lightweight model when enabled
+<<<<<<< HEAD
                 self._model = SentenceTransformer("all-MiniLM-L6-v2")  # type: ignore
                 logger.info("RAGSystem: Local RAG enabled with sentence-transformers")
             except Exception as e:
@@ -68,6 +77,18 @@ class RAGSystem:
                 logger.info(
                     "RAGSystem: ENABLE_LOCAL_RAG!=1; RAG disabled (returns empty context)"
                 )
+=======
+                self._model = SentenceTransformer('all-MiniLM-L6-v2')  # type: ignore
+                logger.info("RAGSystem: Local RAG enabled with sentence-transformers")
+            except Exception as e:
+                logger.warning(f"RAGSystem: Failed to initialize sentence-transformers, disabling RAG ({e})")
+                self.enabled = False
+        else:
+            if SentenceTransformer is None:
+                logger.info("RAGSystem: sentence-transformers not installed; RAG disabled (returns empty context)")
+            else:
+                logger.info("RAGSystem: ENABLE_LOCAL_RAG!=1; RAG disabled (returns empty context)")
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
         self._ensure_faqs()
         self.similarity_threshold = 0.7  # Cosine similarity threshold
 
@@ -100,10 +121,15 @@ class RAGSystem:
                 try:
                     embedding = self._model.encode(faq_data["question"]).tolist()  # type: ignore
                 except Exception as e:
+<<<<<<< HEAD
                     logger.warning(
                         f"RAGSystem: failed to embed FAQ '{faq_data['id']}': {e}"
                     )
 
+=======
+                    logger.warning(f"RAGSystem: failed to embed FAQ '{faq_data['id']}': {e}")
+            
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
             faq = FAQEntry(
                 id=faq_data["id"],
                 question=faq_data["question"],
@@ -112,10 +138,15 @@ class RAGSystem:
                 embedding=embedding,
             )
             faqs.append(faq)
+<<<<<<< HEAD
 
         logger.info(
             f"Loaded {len(faqs)} DeFi FAQs (embeddings={'enabled' if self.enabled else 'disabled'})"
         )
+=======
+        
+        logger.info(f"Loaded {len(faqs)} DeFi FAQs (embeddings={'enabled' if self.enabled else 'disabled'})")
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
         return faqs
 
     def _get_default_faqs(self) -> List[Dict[str, Any]]:

@@ -22,8 +22,11 @@ class LangGraphService:
         collect_evaluation_data: bool = True,
         supabase_token: Optional[str] = None,
         cancel_check=None,
+<<<<<<< HEAD
         user_id: Optional[str] = None,
         conversation_count: Optional[int] = None,
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     ) -> Dict[str, Any]:
         """Process conversation through LangGraph pipeline"""
 
@@ -38,8 +41,11 @@ class LangGraphService:
                 session_id,
                 supabase_token=supabase_token,
                 cancel_check=cancel_check,
+<<<<<<< HEAD
                 user_id=user_id,
                 conversation_count=conversation_count,
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
             )
 
             # Collect evaluation data if requested (instead of running full evaluation)
@@ -73,11 +79,14 @@ class LangGraphService:
                 "transcript": final_state["transcript"],
                 "reply": final_state["llm_response"],
                 "response_path": final_state.get("response_path"),
+<<<<<<< HEAD
                 "current_mode": final_state.get("current_mode"),
                 "utility_path": final_state.get("utility_path"),
                 "router_path": final_state.get("router_path"),
                 "had_crisis": final_state.get("had_crisis", False),
                 "had_boundary": final_state.get("had_boundary", False),
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
                 "user_emotion": {
                     "label": final_state["user_emotion"].label,
                     "confidence": final_state["user_emotion"].confidence,
@@ -86,7 +95,10 @@ class LangGraphService:
                     "label": final_state["sophia_emotion"].label,
                     "confidence": final_state["sophia_emotion"].confidence,
                 },
+<<<<<<< HEAD
                 "is_mock_audio": final_state["is_mock_audio"],
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
                 "audio_url": final_state["audio_url"],
                 "intent": final_state["intent"],
                 "context_memory": final_state.get("context_memory", {}),
@@ -114,8 +126,11 @@ class LangGraphService:
         collect_evaluation_data: bool = True,
         supabase_token: Optional[str] = None,
         cancel_check=None,
+<<<<<<< HEAD
         user_id: Optional[str] = None,
         conversation_count: Optional[int] = None,
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     ) -> Dict[str, Any]:
         """Process text-only conversation through LangGraph pipeline"""
 
@@ -130,8 +145,11 @@ class LangGraphService:
                 session_id,
                 supabase_token=supabase_token,
                 cancel_check=cancel_check,
+<<<<<<< HEAD
                 user_id=user_id,
                 conversation_count=conversation_count,
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
             )
 
             # Collect evaluation data if requested
@@ -167,11 +185,14 @@ class LangGraphService:
                 "transcript": final_state["transcript"],
                 "reply": final_state["llm_response"],
                 "response_path": final_state.get("response_path"),
+<<<<<<< HEAD
                 "current_mode": final_state.get("current_mode"),
                 "utility_path": final_state.get("utility_path"),
                 "router_path": final_state.get("router_path"),
                 "had_crisis": final_state.get("had_crisis", False),
                 "had_boundary": final_state.get("had_boundary", False),
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
                 "user_emotion": {
                     "label": final_state["user_emotion"].label,
                     "confidence": final_state["user_emotion"].confidence,
@@ -181,7 +202,10 @@ class LangGraphService:
                     "confidence": final_state["sophia_emotion"].confidence,
                 },
                 "audio_url": final_state["audio_url"],
+<<<<<<< HEAD
                 "is_mock_audio": final_state["is_mock_audio"],
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
                 "intent": final_state["intent"],
                 "context_memory": final_state.get("context_memory", {}),
                 "fallbacks_used": final_state.get("fallback_used", {}),
@@ -202,6 +226,7 @@ class LangGraphService:
             raise
 
     async def stream_conversation_response(
+<<<<<<< HEAD
         self,
         audio_bytes: bytes,
         session_id: str = None,
@@ -243,11 +268,44 @@ class LangGraphService:
 
                 logger.info(
                     f"⚡ Tier-0: intent={result.type}, emotion={result.emotion}, "
+=======
+        self, audio_bytes: bytes, session_id: str = None
+    ):
+        """Stream conversation response with tier-0 classification - Task #42537"""
+
+        logger.info(
+            f"Streaming conversation with tier-0 classifier for session {session_id}"
+        )
+
+        try:
+            # Step 1: STT to get transcript
+            from app.services.mistral import transcribe_audio_with_voxtral
+
+            transcript = transcribe_audio_with_voxtral(audio_bytes)
+            logger.info(f"📝 Transcript ({len(transcript)} chars): '{transcript}'")
+
+            # Step 2: Tier-0 Fast Classifier (Task #42537)
+            tier0_result = None
+            try:
+                from app.services.tier0_classifier import classify_tier0_fast
+
+                # Call async function directly with await (now that we're in async generator)
+                result = await classify_tier0_fast(
+                    transcript, prosody=None, timeout_ms=500
+                )
+
+                logger.info(
+                    f"🎯 Tier-0: intent={result.type}, emotion={result.emotion}, "
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
                     f"confidence={result.confidence:.2f}, latency={result.latency_ms}ms, "
                     f"source={result.source}"
                 )
 
+<<<<<<< HEAD
                 # Send tier-0 results to frontend immediately
+=======
+                # Send tier-0 results to frontend as first yield
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
                 tier0_result = {
                     "__tier0__": True,
                     "transcript": transcript,
@@ -268,6 +326,7 @@ class LangGraphService:
 
             except Exception as e:
                 logger.warning(
+<<<<<<< HEAD
                     f"⚠️ Tier-0 classifier failed: {e}, continuing with full pipeline"
                 )
 
@@ -381,6 +440,34 @@ class LangGraphService:
                 conversation_count=conversation_count,
             )
 
+=======
+                    f"Tier-0 classifier failed: {e}, continuing without classification"
+                )
+
+            # Step 3: Generate response with streaming
+            from app.services.mistral import stream_generate_reply_from_audio
+
+            for token in stream_generate_reply_from_audio(audio_bytes):
+                yield token
+
+        except Exception as e:
+            logger.error(f"Conversation streaming failed: {e}")
+            # Fallback to rule-based response
+            yield "I'm having trouble processing your request. Could you please try again?"
+
+    def stream_conversation_response_old(self, audio_bytes: bytes, session_id: str = None):
+        """Stream conversation response through LangGraph pipeline
+        
+        Flow: Audio → Voxtral ASR → Mistral LLM (streaming)
+        """
+        
+        logger.info(f"Streaming conversation through LangGraph for session {session_id}")
+        
+        try:
+            # Process audio to get context (ASR + emotion + intent + RAG)
+            state = self.sophia_graph.process_audio_to_context(audio_bytes, session_id)
+            
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
             # Stream LLM response using the processed context
             for token in self.sophia_graph.stream_llm_response(state):
                 yield token
