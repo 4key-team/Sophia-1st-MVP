@@ -34,11 +34,15 @@ interface ChatInterfaceProps {
 
 export default function ChatInterface({ messages, setMessages, isLoading, setIsLoading, accessToken }: ChatInterfaceProps) {
   const [inputText, setInputText] = useState('')
+<<<<<<< HEAD
   const [sessionId, setSessionId] = useState(() => {
     const id = createLocalId()
     console.log('🆔 [Frontend] Initial session_id created:', id)
     return id
   })
+=======
+  const [sessionId, setSessionId] = useState(() => createLocalId())
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -52,9 +56,13 @@ export default function ChatInterface({ messages, setMessages, isLoading, setIsL
 
   useEffect(() => {
     if (messages.length === 0) {
+<<<<<<< HEAD
       const newId = createLocalId()
       console.log('🔄 [Frontend] Session reset - new session_id:', newId)
       setSessionId(newId)
+=======
+      setSessionId(createLocalId())
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     }
   }, [messages.length])
 
@@ -69,7 +77,10 @@ export default function ChatInterface({ messages, setMessages, isLoading, setIsL
       timestamp: new Date()
     }
 
+<<<<<<< HEAD
     console.log('📝 Sending message - PromptComposerV2 will build prompt on backend')
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     setMessages([...messages, userMessage])
     setInputText('')
     setIsLoading(true)
@@ -92,8 +103,11 @@ export default function ChatInterface({ messages, setMessages, isLoading, setIsL
         throw new Error('Missing Supabase access token. Please refresh the page or sign in again.')
       }
 
+<<<<<<< HEAD
       console.log('📤 [Frontend] Sending request with session_id:', sessionId)
 
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/text-chat/stream`, {
         method: 'POST',
         headers: {
@@ -135,6 +149,7 @@ export default function ChatInterface({ messages, setMessages, isLoading, setIsL
 
       const handleEvent = (event: string, data: string) => {
         try {
+<<<<<<< HEAD
           if (event === 'meta') {
             const payload = JSON.parse(data)
             if (payload.session_id) {
@@ -142,12 +157,16 @@ export default function ChatInterface({ messages, setMessages, isLoading, setIsL
               setSessionId(payload.session_id)
             }
           } else if (event === 'token') {
+=======
+          if (event === 'token') {
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
             const chunk = data
             accumulated += chunk
             updateSophia({ content: accumulated })
           } else if (event === 'reply_done') {
             const payload = JSON.parse(data)
             accumulated = payload.reply || accumulated
+<<<<<<< HEAD
             console.log('✅ Response received - built with PromptComposerV2 (check backend logs for details)')
             updateSophia({ content: accumulated, isStreaming: false })
             if (payload.user_emotion) {
@@ -162,6 +181,15 @@ export default function ChatInterface({ messages, setMessages, isLoading, setIsL
           } else if (event === 'audio_url') {
             const payload = JSON.parse(data)
             console.log('🔊 Audio synthesis complete')
+=======
+            updateSophia({ content: accumulated, isStreaming: false })
+            if (payload.user_emotion) {
+              updateUserEmotion(payload.user_emotion)
+            }
+            replyFinished = true
+          } else if (event === 'audio_url') {
+            const payload = JSON.parse(data)
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
             updateSophia({
               content: accumulated,
               audioUrl: payload.audio_url,
@@ -171,10 +199,13 @@ export default function ChatInterface({ messages, setMessages, isLoading, setIsL
             if (payload.user_emotion) {
               updateUserEmotion(payload.user_emotion)
             }
+<<<<<<< HEAD
             if (payload.session_id) {
               console.log('📥 [Frontend] Received session_id from AUDIO_URL event:', payload.session_id)
               setSessionId(payload.session_id)
             }
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
             audioCompleted = true
             const mock = !!payload.mock_audio
             if (payload.audio_url && !mock && /^https?:\/\//.test(payload.audio_url)) {
@@ -266,7 +297,11 @@ export default function ChatInterface({ messages, setMessages, isLoading, setIsL
     }
   }
 
+<<<<<<< HEAD
   const handleKeyDown = (e: React.KeyboardEvent) => {
+=======
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendTextMessage()
@@ -382,7 +417,11 @@ export default function ChatInterface({ messages, setMessages, isLoading, setIsL
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
+<<<<<<< HEAD
                 onKeyDown={handleKeyDown}
+=======
+                onKeyPress={handleKeyPress}
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
                 placeholder="Ask Sophia about DeFi strategies, risks, or market insights..."
                 className="w-full bg-gradient-to-r from-gray-800/80 to-gray-900/80 border border-gray-600/50 rounded-xl px-6 py-4 text-white placeholder-gray-400 focus:outline-none focus:border-purple-400/50 focus:ring-2 focus:ring-purple-400/20 transition-all backdrop-blur-sm shadow-lg"
                 disabled={isLoading}

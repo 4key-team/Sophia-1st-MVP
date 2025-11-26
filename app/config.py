@@ -88,7 +88,11 @@ class Settings:
 
     _public_raw = os.getenv(
         "API_PUBLIC_PATHS",
+<<<<<<< HEAD
         "/,/health,/metrics,/docs,/openapi.json,/api",
+=======
+        "/,/health,/docs,/openapi.json,/api",
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     )
     API_PUBLIC_PATHS: List[str] = [
         path.strip() for path in _public_raw.split(",") if path.strip()
@@ -101,6 +105,25 @@ class Settings:
         os.getenv("EMOTIONAL_RAG_TIMEOUT_SECONDS", "0.3")
     )
 
+<<<<<<< HEAD
+=======
+    # Tier-0 classifier tuning
+    TIER0_LLM_TIMEOUT_MS: int = int(os.getenv("TIER0_LLM_TIMEOUT_MS", "1000"))
+    TIER0_LLM_TIMEOUT_GRACE_MS: int = int(
+        os.getenv("TIER0_LLM_TIMEOUT_GRACE_MS", "100")
+    )
+    TIER0_LLM_MAX_RETRIES: int = int(os.getenv("TIER0_LLM_MAX_RETRIES", "2"))
+    TIER0_LLM_BACKOFF_BASE_MS: int = int(
+        os.getenv("TIER0_LLM_BACKOFF_BASE_MS", "200")
+    )
+    TIER0_LLM_BACKOFF_FACTOR: float = float(
+        os.getenv("TIER0_LLM_BACKOFF_FACTOR", "2.0")
+    )
+    TIER0_SUCCESS_ALERT_THRESHOLD: float = float(
+        os.getenv("TIER0_SUCCESS_ALERT_THRESHOLD", "0.5")
+    )
+
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     # Affect snapshot / Phoenix background
     AFFECT_SNAPSHOT_TTL_SECONDS: int = int(
         os.getenv("AFFECT_SNAPSHOT_TTL_SECONDS", "300")

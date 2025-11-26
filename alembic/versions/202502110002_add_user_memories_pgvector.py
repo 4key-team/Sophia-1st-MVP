@@ -26,12 +26,20 @@ def upgrade() -> None:
             nullable=False,
             server_default=sa.text("gen_random_uuid()"),
         ),
+<<<<<<< HEAD
         sa.Column("user_id", sa.Text(), nullable=False),
         sa.Column("session_id", postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column("memory_text", sa.Text(), nullable=False),
         # Vector embedding for semantic search (384 dimensions for all-MiniLM-L6-v2)
         # Note: pgvector's vector type is created via raw SQL below
         sa.Column("embedding", sa.Text(), nullable=True),  # Will be altered to vector(384)
+=======
+        sa.Column("user_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("session_id", postgresql.UUID(as_uuid=True), nullable=True),
+        sa.Column("memory_text", sa.Text(), nullable=False),
+        # Vector embedding for semantic search (384 dimensions for all-MiniLM-L6-v2)
+        sa.Column("embedding", postgresql.ARRAY(sa.Float), nullable=True),
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
         sa.Column(
             "memory_type",
             sa.Text(),
@@ -69,12 +77,15 @@ def upgrade() -> None:
         ),
     )
 
+<<<<<<< HEAD
     # Alter embedding column to use pgvector's vector type (384 dimensions)
     op.execute("""
         ALTER TABLE user_memories
         ALTER COLUMN embedding TYPE vector(384) USING embedding::vector(384);
     """)
 
+=======
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     # Create indices for fast lookups
     op.create_index(
         "idx_user_memories_user_id",
@@ -105,6 +116,7 @@ def upgrade() -> None:
         WITH (lists = 100);
     """)
 
+<<<<<<< HEAD
     # Create trigger for auto-updating updated_at
     op.execute("""
         CREATE OR REPLACE FUNCTION update_user_memories_updated_at()
@@ -161,10 +173,18 @@ def upgrade() -> None:
     """)
     op.execute("""
         COMMENT ON COLUMN user_memories.embedding IS 'Sentence embedding vector (384-dim from all-MiniLM-L6-v2)';
+=======
+    # Add foreign key to users table (references auth.users in Supabase)
+    # Note: In Supabase, auth.users is managed separately, so we may need to handle this manually
+    # For now, we'll add a comment indicating the relationship
+    op.execute("""
+        COMMENT ON COLUMN user_memories.user_id IS 'References auth.users(id) - managed by Supabase Auth';
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     """)
 
 
 def downgrade() -> None:
+<<<<<<< HEAD
     # Drop RLS policies
     op.execute('DROP POLICY IF EXISTS "Users can view own memories" ON user_memories;')
     op.execute('DROP POLICY IF EXISTS "Service role can insert memories" ON user_memories;')
@@ -182,4 +202,10 @@ def downgrade() -> None:
     op.drop_index("idx_user_memories_user_id", table_name="user_memories")
 
     # Drop table
+=======
+    op.drop_index("idx_user_memories_embedding_ivfflat", table_name="user_memories")
+    op.drop_index("idx_user_memories_created_at", table_name="user_memories")
+    op.drop_index("idx_user_memories_session_id", table_name="user_memories")
+    op.drop_index("idx_user_memories_user_id", table_name="user_memories")
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
     op.drop_table("user_memories")

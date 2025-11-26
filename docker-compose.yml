@@ -9,12 +9,36 @@ services:
     container_name: sophia-backend
     ports:
       - "8000:8000"
+<<<<<<< HEAD
     env_file:
       - .env
     environment:
       # Redis connection (override)
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+=======
+    environment:
+      # API Keys (load from .env file)
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - INWORLD_API_KEY=${INWORLD_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+
+      # Supabase
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - SUPABASE_DB_DSN=${SUPABASE_DB_DSN}
+
+      # Redis connection
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+      # API Security
+      - API_KEYS=${API_KEYS}
+
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
       # Server config
       - PORT=8000
       - PYTHONUNBUFFERED=1

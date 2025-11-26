@@ -16,6 +16,10 @@ except Exception:  # pragma: no cover - diagnostic only
 # ========================================
 import asyncio
 import logging
+<<<<<<< HEAD
+=======
+import sys
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
 import threading
 import time
 from dataclasses import dataclass
@@ -636,6 +640,7 @@ def analyze_emotion_audio(wav_bytes: bytes) -> Emotion:
         db_label = emotion_mapping.get(label, "neutral")
 
         # Confidence not provided by default template; set midpoint
+<<<<<<< HEAD
         return Emotion(
             label=db_label, confidence=0.8
         )  # Higher confidence with improved template
@@ -649,6 +654,15 @@ def analyze_emotion_audio(wav_bytes: bytes) -> Emotion:
             logger.warning(
                 f"Audio emotion classification failed with RuntimeError: {e}"
             )
+=======
+        return Emotion(label=db_label, confidence=0.8)  # Higher confidence with improved template
+    except RuntimeError as e:
+        # Specifically catch event loop errors
+        if "event loop" in str(e).lower() or "asyncio" in str(e).lower():
+            logger.warning(f"Audio emotion classification failed due to event loop conflict: {e}. Returning neutral.")
+        else:
+            logger.warning(f"Audio emotion classification failed with RuntimeError: {e}")
+>>>>>>> 455d596 (Improve tier0 classifier: retries, metrics, cloud check)
         return Emotion(label="neutral", confidence=0.5)
     except Exception as e:
         logger.warning(f"Audio emotion classification failed: {e}")
