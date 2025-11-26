@@ -22,3 +22,5 @@ alembic
 nest-asyncio
 psutil
 prometheus-client
+librosa
+soundfile

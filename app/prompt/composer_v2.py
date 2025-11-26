@@ -4,7 +4,7 @@ Prompt Data Structures and Composer V2 for Sophia
 This module defines core data structures for the prompt composition system
 and implements the PromptComposerV2 class for dynamic prompt assembly.
 
-Tasks: #42785, #42839
+Tasks: #42785, #42839, #42843
 """
 
 from dataclasses import dataclass
@@ -12,6 +12,7 @@ from typing import Optional, Literal, List
 
 from app.routing.models import CurrentMode
 from app.routing.emotional_router import EmotionalSkill
+from app.emotion import ProsodySnapshot, format_prosody_context
 
 
 @dataclass
@@ -413,6 +414,7 @@ class PromptComposerV2:
         mem0_snippets: List[str],
         rag_snippets: List[str],
         affect_snapshot: Optional[AffectSnapshot] = None,
+        prosody_snapshot: Optional[ProsodySnapshot] = None,
     ) -> PromptPayload:
         """
         Build complete prompt from tiered components.
@@ -424,6 +426,7 @@ class PromptComposerV2:
             mem0_snippets: Memory snippets from Mem0
             rag_snippets: RAG retrieval snippets
             affect_snapshot: User's emotional state (optional)
+            prosody_snapshot: User's voice prosody characteristics (optional)
 
         Returns:
             PromptPayload with assembled prompt, model ID, and truncation flag
@@ -473,6 +476,11 @@ class PromptComposerV2:
                 AFFECT_GUIDANCE_MAP["neutral"]
             )
             blocks.append(f"\n{affect_block}")
+
+        # Add prosody context if available (works for all modes)
+        prosody_context = format_prosody_context(prosody_snapshot)
+        if prosody_context:
+            blocks.append(f"\n## Voice Characteristics\n{prosody_context}")
 
         # Join all blocks
         prompt = "\n\n".join(blocks)

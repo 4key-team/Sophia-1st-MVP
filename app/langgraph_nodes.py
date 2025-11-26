@@ -31,6 +31,7 @@ from app.services.rag import rag_system
 from app.services.memo import memo_client  # Task #42597
 from app.services.prompt_composer import prompt_composer  # Task #42597
 from app.prompt.composer_v2 import PromptComposerV2, TurnSnippet, AffectSnapshot  # Task #42839
+from app.emotion import ProsodySnapshot, extract_prosody_from_audio  # Task #42843
 from app.config import get_settings
 from app.routing.intent_router import classify_intent_and_mode
 from app.routing.models import CurrentMode, Intent, UtilityPath
@@ -483,6 +484,17 @@ class ResponseGenerator:
                     source="phoenix"
                 )
 
+        # Extract prosody snapshot from audio (Task #42843)
+        prosody_snapshot = None
+        audio_bytes = state.get("audio_bytes")
+        if audio_bytes:
+            prosody_snapshot = extract_prosody_from_audio(audio_bytes)
+            if prosody_snapshot:
+                logger.info(
+                    f"Extracted prosody: intensity={prosody_snapshot.intensity}, "
+                    f"pitch={prosody_snapshot.pitch_movement}, pace={prosody_snapshot.pace}"
+                )
+
         # Build prompt using PromptComposerV2
         result = await self._prompt_composer_v2.build_prompt(
             current_mode=mode,
@@ -491,6 +503,7 @@ class ResponseGenerator:
             mem0_snippets=mem0_snippets,
             rag_snippets=rag_snippets,
             affect_snapshot=affect_snapshot,
+            prosody_snapshot=prosody_snapshot,  # Task #42843
         )
 
         logger.info(
